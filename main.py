@@ -9,16 +9,28 @@ import sqlite3
 from datetime import datetime
 import io
 import base64
+from pathlib import Path
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
 
-BASE_IMAGE = "template.png"
+# Get the directory where this file is located
+BASE_DIR = Path(__file__).parent
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+
+BASE_IMAGE = str(BASE_DIR / "template.png")
 OUTPUT_DIR = "/tmp/wishing"  # Changed to /tmp for serverless
-FONT_PATH = "fonts/Amiri-Regular.ttf"       # Arabic + English
-EMOJI_FONT_PATH = "fonts/Segoe UI Emoji.TTF" # Emojis
+FONT_PATH = str(BASE_DIR / "fonts" / "Amiri-Regular.ttf")       # Arabic + English
+EMOJI_FONT_PATH = str(BASE_DIR / "fonts" / "Segoe UI Emoji.TTF") # Emojis
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# Verify required files exist (helpful for debugging)
+if not os.path.exists(BASE_IMAGE):
+    raise FileNotFoundError(f"Template image not found: {BASE_IMAGE}")
+if not os.path.exists(FONT_PATH):
+    raise FileNotFoundError(f"Font file not found: {FONT_PATH}")
+if not os.path.exists(EMOJI_FONT_PATH):
+    raise FileNotFoundError(f"Emoji font file not found: {EMOJI_FONT_PATH}")
 
 # ===== TEXT BOX =====
 BOX_LEFT   = 189
@@ -173,7 +185,9 @@ def submit(wish: str = Form(...), name: str = Form(...)):
         }
     )
 
-# This is required for Vercel
+# Vercel Python runtime handler
+# Vercel automatically detects the 'app' variable as the ASGI application
+# Some configurations may require explicit handler export
 handler = app
 
 if __name__ == "__main__":
