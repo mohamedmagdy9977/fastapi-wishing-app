@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.templating import Jinja2Templates
 from PIL import Image, ImageDraw, ImageFont
 import uuid
@@ -7,12 +7,14 @@ import os
 import re
 import sqlite3
 from datetime import datetime
-current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+import io
+import base64
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 BASE_IMAGE = "template.png"
-OUTPUT_DIR = "wishing"
+OUTPUT_DIR = "/tmp/wishing"  # Changed to /tmp for serverless
 FONT_PATH = "fonts/Amiri-Regular.ttf"       # Arabic + English
 EMOJI_FONT_PATH = "fonts/Segoe UI Emoji.TTF" # Emojis
 
@@ -89,8 +91,12 @@ def home(request: Request):
 
 @app.post("/submit")
 def submit(wish: str = Form(...), name: str = Form(...)):
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     # ===== Save to SQLite before generating template =====
-    conn = sqlite3.connect("wishes.db")
+    # Using /tmp for serverless environment
+    db_path = "/tmp/wishes.db"
+    conn = sqlite3.connect(db_path)
     try:
         cur = conn.cursor()
         # Create table if it doesn't exist
@@ -152,12 +158,24 @@ def submit(wish: str = Form(...), name: str = Form(...)):
         anchor="la"
     )
 
-    # ===== Save file safely =====
+    # ===== Save to BytesIO instead of file for serverless =====
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+    
     filename = f"{prepared_name}_{current_time}.png"
-    path = os.path.join(OUTPUT_DIR, filename)
-    img.save(path)
+    
+    return Response(
+        content=img_io.getvalue(),
+        media_type="image/png",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
 
-    return FileResponse(path, media_type="image/png", filename=filename)
+# This is required for Vercel
+handler = app
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
