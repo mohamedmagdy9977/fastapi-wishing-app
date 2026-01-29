@@ -186,9 +186,9 @@ def submit(wish: str = Form(...), name: str = Form(...)):
     )
 
 # Vercel Python runtime handler
-# Vercel automatically detects the 'app' variable as the ASGI application
-# Some configurations may require explicit handler export
-handler = app
+# For FastAPI (ASGI), Vercel automatically detects the 'app' variable
+# DO NOT export 'handler' - that's only for BaseHTTPRequestHandler classes
+# Exporting both causes Vercel's detection code to fail with TypeError
 
 if __name__ == "__main__":
     import uvicorn
