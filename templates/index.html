@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Engagement Wishes 💍</title>
+    <style>
+        body {
+            background: #f3f1ef;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            width: 420px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        button {
+            background: #c67b4a;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 style="color:#c67b4a;text-align:center;">Mohamed & Nada</h2>
+    <form method="post" action="/submit">
+        <textarea name="wish" placeholder="اكتب التهنئة / Write your wish" required></textarea>
+        <input name="name" placeholder="اسمك / Your name" required>
+        <button type="submit">Send ❤️</button>
+    </form>
+</div>
+
+</body>
+</html>
